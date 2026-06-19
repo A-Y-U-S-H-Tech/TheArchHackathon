@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
-from app.server import dms
+from dms_instance import dms
 
 router = APIRouter()
 
@@ -22,6 +22,19 @@ async def PMS_Delete(PID:int):
 async def PMS_Update(PID:int):
     pass
 
-@router.get("/PMS/Get_ALL")
-def PMS_GetALL():
-    pass
+@router.post("/PMS/Get_ALL")
+async def PMS_GetALL(request:Request):
+    _data = await request.json()
+    _flag = dms.Get_Products(_data["i"],_data["j"])
+    if _flag:
+        return JSONResponse(_flag[1])
+    else:
+        return JSONResponse(" ",400)
+    
+@router.get("/PMS/{Product_ID}/Get")
+def PMS_Get(Product_ID:int):
+    _flag = dms.Get_Product(Product_ID)
+    if _flag:
+        return JSONResponse(_flag[1])
+    else:
+        return JSONResponse(" ",400)

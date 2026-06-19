@@ -158,6 +158,7 @@ manages all the account and authentication related tasks
 {
     TID: Ticket_ID,
     CID: Complaint_ID,
+    DES: Ticket_Description
     DEP: Assigned_Department,
     PRI: Priority_Level,
     STA: Ticket_Status,
@@ -197,6 +198,40 @@ manages all the account and authentication related tasks
 ---
 
 ## System Definitions
+##
+## Product Managment System
+  - Only SUP roles can call this resoureces and fucnctions
+  - /PMS/Create POST:-
+    - It Creates A Product ID
+    - it requries the foolowing json request:-
+      -{
+        PNM:Product_Name,
+        PCAT:Product_Catogory,
+        PDES:Product_Description,
+        PSTA:Product_Status (Active,Deactive,Archived)
+      }
+  - /PMS/{PID}/Delete POST:-
+    - here PID refres to the product ID 
+    - It deletes the given product with the given PID
+  - /PMS/{PID}/Update POST:-
+    - PID refres to the Product ID
+    - it updates a Particular Product with a Product ID
+    - It requires the foolowing json Request:-
+      -{
+        PSTA:product_Status | Pass false if don't want to update
+        PDES:product_Statis | pass false if don't want to update
+      }
+  
+  - /PMS/Get_ALL POST:-
+    - It returns product between i and j index PID
+    - it takes the following json :{
+      i : Start_Index
+      j : Stop_Index
+    }
+    - if there are no product in that range it will return a empty list
+
+  - /PMS/{Product_ID}/Get GET:-
+    - this will return the product with the respective product id or will return 400 status code
 
 ## Authentication Management System
   - Role Defination:-
@@ -267,17 +302,20 @@ manages all the account and authentication related tasks
     - will logout the currently loged in user
 ## Product Knowledge Management System (PKMS)
 
-All resources are protected and require authentication.
+All resources are protected and require authentication with role SUP (superviser).
 
 ### `POST /PKMS/upload_document`
 
 Uploads product knowledge documents.
 
-Request:
-
-```text
-PDF File
-```
+multi-part form data Request:
+  - part 1 as the uploadfile as Ufile
+  - part 2 as the metaData with the following stringified json
+  {
+    DID: Document_ID,
+    DNM: Document_Name,
+    DTYPE: Document_Type,(in this formate cat1/subcat2/ there should be trailing /)
+  }
 
 Behavior:
 
@@ -289,9 +327,9 @@ Response:
 
 ```json
 {
-  "Uploaded"
+  "ok"
 }
-```
+```with 200 status code 
 
 ### `GET /PKMS/all_documents`
 
@@ -443,7 +481,8 @@ Request:
 {
   "CID": "Complaint_ID",
   "PRI": "Priority",
-  "DEP": "Depatment"
+  "DEP": "Depatment",
+  "DES": "Description of ticket"
 }
 ```
 
@@ -460,6 +499,18 @@ Escalates ticket.
 ### `POST /TGS/{Ticket_ID}/Close`
 
 Closes ticket.
+
+## 'POST /TGS/return_all'
+- Json Request Needed
+{
+  i:start_index,
+  j:end_index
+}
+- will return ticket between these indices
+- return empty list if there exits non between the range i an j 
+
+## 'GET /TGS/{Ticket_ID}/return'
+- this will fetch ticket with the coreesponding ticket_ID given else return 400 status cod if none are found 
 
 ---
 
@@ -663,5 +714,5 @@ Final Resolution Recommendation
 
 This design is structured for an enterprise-style hackathon submission and demonstrates RAG, agentic AI, ticket automation, and FMCG operational value.
 ## Note:-
-- The Server uses JWT for AUthentication and needs  to be send in HTTP Athtentication Header
+
 -Server is Monolitic in nature

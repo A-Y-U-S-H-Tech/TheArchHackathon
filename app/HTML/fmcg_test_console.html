@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FMCG Ops Copilot — API Test Console</title>
+<style>
+  :root{
+    --bg:#1e1f24;
+    --panel:#26282f;
+    --panel-alt:#2e3038;
+    --border:#3a3d47;
+    --text:#e6e7eb;
+    --text-dim:#9a9da8;
+    --accent:#5aa9e6;
+    --accent-dim:#3a6f93;
+    --ok:#4caf7d;
+    --err:#e0615c;
+    --warn:#d6a32c;
+    --mono: "SF Mono", Consolas, "Courier New", monospace;
+    --sans: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    font-size:14px;
+  }
+  header{
+    background:var(--panel);
+    border-bottom:1px solid var(--border);
+    padding:12px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+    position:sticky;
+    top:0;
+    z-index:50;
+  }
+  header h1{
+    font-size:16px;
+    margin:0;
+    font-weight:600;
+    letter-spacing:.2px;
+  }
+  header h1 span{color:var(--text-dim); font-weight:400;}
+  .base-url-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--mono);
+    font-size:13px;
+  }
+  .base-url-row input{
+    background:var(--panel-alt);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:5px 8px;
+    border-radius:4px;
+    font-family:var(--mono);
+    font-size:13px;
+    width:220px;
+  }
+  .status-pill{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    color:var(--text-dim);
+    padding:4px 10px;
+    border:1px solid var(--border);
+    border-radius:20px;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--text-dim);}
+  .dot.ok{background:var(--ok);}
+  .dot.err{background:var(--err);}
+
+  .layout{
+    display:flex;
+    min-height:calc(100vh - 53px);
+  }
+  nav{
+    width:220px;
+    background:var(--panel);
+    border-right:1px solid var(--border);
+    padding:14px 0;
+    flex-shrink:0;
+    position:sticky;
+    top:53px;
+    height:calc(100vh - 53px);
+    overflow-y:auto;
+  }
+  nav .group-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.6px;
+    color:var(--text-dim);
+    padding:10px 16px 4px;
+  }
+  nav button.navlink{
+    display:block;
+    width:100%;
+    text-align:left;
+    background:none;
+    border:none;
+    color:var(--text-dim);
+    padding:7px 16px;
+    font-size:13px;
+    cursor:pointer;
+    border-left:3px solid transparent;
+  }
+  nav button.navlink:hover{ color:var(--text); background:var(--panel-alt); }
+  nav button.navlink.active{
+    color:var(--accent);
+    border-left-color:var(--accent);
+    background:var(--panel-alt);
+  }
+
+  main{
+    flex:1;
+    padding:20px;
+    max-width:1100px;
+  }
+  .section{ display:none; }
+  .section.active{ display:block; }
+
+  .section-title{
+    font-size:18px;
+    font-weight:600;
+    margin:0 0 4px;
+  }
+  .section-sub{
+    color:var(--text-dim);
+    font-size:13px;
+    margin:0 0 18px;
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:6px;
+    margin-bottom:16px;
+    overflow:hidden;
+  }
+  .card-head{
+    padding:10px 14px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--panel-alt);
+  }
+  .method{
+    font-family:var(--mono);
+    font-size:11px;
+    font-weight:700;
+    padding:2px 7px;
+    border-radius:3px;
+    color:#0d0d0d;
+  }
+  .method.GET{background:#79c0ff;}
+  .method.POST{background:#7ee787;}
+  .method.DELETE{background:#ff7b72;}
+  .path{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--text);
+  }
+  .card-head .needs-auth{
+    margin-left:auto;
+    font-size:11px;
+    color:var(--warn);
+    border:1px solid var(--warn);
+    padding:1px 6px;
+    border-radius:3px;
+  }
+  .card-body{
+    padding:14px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  @media (max-width:760px){
+    .card-body{grid-template-columns:1fr;}
+    .layout{flex-direction:column;}
+    nav{width:100%; height:auto; position:relative; top:0;}
+  }
+  .field-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    color:var(--text-dim);
+    margin-bottom:4px;
+    display:block;
+  }
+  .field{ margin-bottom:10px; }
+  input[type=text], input[type=password], input[type=number], textarea, select{
+    width:100%;
+    background:var(--bg);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:7px 9px;
+    border-radius:4px;
+    font-family:var(--mono);
+    font-size:12.5px;
+  }
+  textarea{ min-height:90px; resize:vertical; }
+  input:focus, textarea:focus, select:focus{
+    outline:none;
+    border-color:var(--accent);
+  }
+  .row2{ display:flex; gap:8px; }
+  .row2 > *{ flex:1; }
+
+  .file-drop{
+    border:1px dashed var(--border);
+    border-radius:4px;
+    padding:10px;
+    font-size:12px;
+    color:var(--text-dim);
+  }
+  .file-drop input{ font-size:12px; }
+
+  button.send{
+    background:var(--accent-dim);
+    color:#fff;
+    border:1px solid var(--accent);
+    padding:7px 14px;
+    border-radius:4px;
+    font-size:12.5px;
+    cursor:pointer;
+    font-weight:600;
+  }
+  button.send:hover{ background:var(--accent); }
+  button.send:disabled{ opacity:.5; cursor:default; }
+
+  .out-col{ display:flex; flex-direction:column; }
+  .out-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
+  .resp-status{
+    font-family:var(--mono);
+    font-size:12px;
+    padding:2px 8px;
+    border-radius:3px;
+    background:var(--panel-alt);
+    color:var(--text-dim);
+  }
+  .resp-status.s2xx{ color:var(--ok); }
+  .resp-status.s4xx, .resp-status.s5xx{ color:var(--err); }
+  pre.resp-body{
+    background:#16171b;
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:10px;
+    font-family:var(--mono);
+    font-size:12px;
+    flex:1;
+    min-height:90px;
+    max-height:300px;
+    overflow:auto;
+    white-space:pre-wrap;
+    word-break:break-word;
+    margin:0;
+    color:var(--text-dim);
+  }
+  pre.resp-body.has-data{ color:var(--text); }
+
+  .helper-text{
+    font-size:11px;
+    color:var(--text-dim);
+    margin-top:-4px;
+    margin-bottom:8px;
+  }
+
+  .auth-banner{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--panel-alt);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:10px 14px;
+    margin-bottom:18px;
+    font-size:13px;
+  }
+  .auth-banner code{
+    font-family:var(--mono);
+    background:var(--bg);
+    padding:2px 6px;
+    border-radius:3px;
+    color:var(--accent);
+  }
+  .clear-btn{
+    margin-left:auto;
+    background:none;
+    border:1px solid var(--border);
+    color:var(--text-dim);
+    padding:4px 10px;
+    border-radius:4px;
+    font-size:12px;
+    cursor:pointer;
+  }
+  .clear-btn:hover{ color:var(--text); border-color:var(--text-dim); }
+
+  table.list-table{
+    width:100%;
+    border-collapse:collapse;
+    font-family:var(--mono);
+    font-size:12px;
+  }
+  table.list-table th, table.list-table td{
+    border-bottom:1px solid var(--border);
+    padding:6px 8px;
+    text-align:left;
+  }
+  table.list-table th{ color:var(--text-dim); font-weight:600; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>FMCG Ops Copilot <span>— API Test Console</span></h1>
+  <div class="base-url-row">
+    Base URL:
+    <input id="baseUrlInput" type="text" value="http://localhost:8080">
+    <div class="status-pill"><div class="dot" id="connDot"></div><span id="connText">not checked</span></div>
+    <button class="send" id="pingBtn" type="button">Ping</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav id="navMenu">
+    <div class="group-label">Auth</div>
+    <button class="navlink active" data-target="sec-ams">AMS — Authentication</button>
+
+    <div class="group-label">Products</div>
+    <button class="navlink" data-target="sec-pms">PMS — Products</button>
+
+    <div class="group-label">Knowledge</div>
+    <button class="navlink" data-target="sec-pkms">PKMS — Knowledge Docs</button>
+
+    <div class="group-label">Complaints</div>
+    <button class="navlink" data-target="sec-cms">CMS — Complaints</button>
+    <button class="navlink" data-target="sec-rrs">RRS — RAG Retrieval</button>
+    <button class="navlink" data-target="sec-ctas">CTAS — Triage Agent</button>
+
+    <div class="group-label">Tickets</div>
+    <button class="navlink" data-target="sec-tgs">TGS — Tickets</button>
+
+    <div class="group-label">Insights</div>
+    <button class="navlink" data-target="sec-das">DAS — Dashboard</button>
+    <button class="navlink" data-target="sec-stat">STAT — Global Stats</button>
+
+    <div class="group-label">Misc</div>
+    <button class="navlink" data-target="sec-raw">Raw Request</button>
+  </nav>
+
+  <main>
+
+    <div class="auth-banner">
+      Current token: <code id="tokenDisplay">none</code>
+      <span style="color:var(--text-dim)">Sent automatically as a cookie / Bearer header on protected calls.</span>
+      <button class="clear-btn" id="clearTokenBtn" type="button">Clear token</button>
+    </div>
+
+    <!-- ===================== AMS ===================== -->
+    <section class="section active" id="sec-ams">
+      <p class="section-title">Authentication Management System</p>
+      <p class="section-sub">Roles: CUS (customer), CSE (service executive), SUP (supervisor). Login sets a JWT used by protected routes below.</p>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/AMS/login</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">user_name (NAM)</label><input type="text" id="ams_login_nam" placeholder="e.g. supervisor1"></div>
+            <div class="field"><label class="field-label">user_password (PAS)</label><input type="password" id="ams_login_pas" placeholder="••••••••"></div>
+            <button class="send" type="button" onclick="callAmsLogin()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="ams_login_status">—</span></div>
+            <pre class="resp-body" id="ams_login_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/AMS/signup</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">user_name (NAM)</label><input type="text" id="ams_signup_nam"></div>
+            <div class="field"><label class="field-label">user_password (PAS)</label><input type="password" id="ams_signup_pas"></div>
+            <div class="field"><label class="field-label">user_email (EMA)</label><input type="text" id="ams_signup_ema"></div>
+            <div class="field">
+              <label class="field-label">Role (ROL)</label>
+              <select id="ams_signup_rol">
+                <option value="CUS">CUS — Customer</option>
+                <option value="CSE">CSE — Service Executive (requires SUP login)</option>
+              </select>
+            </div>
+            <p class="helper-text">Note: a signup does not log you in — call /AMS/login separately after this succeeds. CSE accounts require an active SUP session; SUP accounts can't be created via this route.</p>
+            <button class="send" type="button" onclick="callAmsSignup()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="ams_signup_status">—</span></div>
+            <pre class="resp-body" id="ams_signup_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/AMS/{user_name}/Update</span><span class="needs-auth">auth required</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">user_name (path param)</label><input type="text" id="ams_upd_user"></div>
+            <div class="field"><label class="field-label">Updated email (EMA) — leave blank for "false"</label><input type="text" id="ams_upd_ema"></div>
+            <div class="field"><label class="field-label">Updated password (PAS) — leave blank for "false"</label><input type="password" id="ams_upd_pas"></div>
+            <div class="field">
+              <label class="field-label">ROL — promote to SUP (only meaningful for a SUP-issued request on a CSE user)</label>
+              <select id="ams_upd_rol">
+                <option value="">— omit field —</option>
+                <option value="true">true</option>
+                <option value="false">false</option>
+              </select>
+            </div>
+            <button class="send" type="button" onclick="callAmsUpdate()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="ams_upd_status">—</span></div>
+            <pre class="resp-body" id="ams_upd_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/AMS/logout</span><span class="needs-auth">auth required</span></div>
+        <div class="card-body">
+          <div><button class="send" type="button" onclick="callAmsLogout()">Send</button></div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="ams_logout_status">—</span></div>
+            <pre class="resp-body" id="ams_logout_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PMS ===================== -->
+    <section class="section" id="sec-pms">
+      <p class="section-title">Product Management System</p>
+      <p class="section-sub">All routes require an authenticated SUP (supervisor) session.</p>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/PMS/Create</span><span class="needs-auth">SUP only</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">PNM — Product_Name</label><input type="text" id="pms_create_pnm"></div>
+            <div class="field"><label class="field-label">PCAT — Product_Category</label><input type="text" id="pms_create_pcat"></div>
+            <div class="field"><label class="field-label">PDES — Product_Description</label><textarea id="pms_create_pdes"></textarea></div>
+            <div class="field">
+              <label class="field-label">PSTA — Product_Status</label>
+              <select id="pms_create_psta">
+                <option value="Active">Active</option>
+                <option value="Deactive">Deactive</option>
+                <option value="Archived">Archived</option>
+              </select>
+            </div>
+            <button class="send" type="button" onclick="callPmsCreate()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="pms_create_status">—</span></div>
+            <pre class="resp-body" id="pms_create_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/PMS/{PID}/Update</span><span class="needs-auth">SUP only</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">PID — Product_ID</label><input type="text" id="pms_upd_pid"></div>
+            <div class="field">
+              <label class="field-label">PSTA — Product_Status (or "false" to skip update)</label>
+              <select id="pms_upd_psta">
+                <option value="">— omit / no change (sends false) —</option>
+                <option value="Active">Active</option>
+                <option value="Deactive">Deactive</option>
+                <option value="Archived">Archived</option>
+              </select>
+            </div>
+            <div class="field"><label class="field-label">PDES — Product_Description (leave blank to send false)</label><textarea id="pms_upd_pdes"></textarea></div>
+            <p class="helper-text">Per the design doc both fields are sent as "false" when no update is needed for that field.</p>
+            <button class="send" type="button" onclick="callPmsUpdate()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="pms_upd_status">—</span></div>
+            <pre class="resp-body" id="pms_upd_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/PMS/{PID}/Delete</span><span class="needs-auth">SUP only</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">PID — Product_ID</label><input type="text" id="pms_del_pid"></div>
+            <button class="send" type="button" onclick="callPmsDelete()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="pms_del_status">—</span></div>
+            <pre class="resp-body" id="pms_del_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/PMS/Get_ALL</span><span class="needs-auth">SUP only</span></div>
+        <div class="card-body">
+          <div>
+            <div class="row2">
+              <div class="field"><label class="field-label">i — Start_Index</label><input type="number" id="pms_getall_i" value="0"></div>
+              <div class="field"><label class="field-label">j — Stop_Index</label><input type="number" id="pms_getall_j" value="10"></div>
+            </div>
+            <p class="helper-text">Returns an empty list if no products fall in that range.</p>
+            <button class="send" type="button" onclick="callPmsGetAll()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="pms_getall_status">—</span></div>
+            <pre class="resp-body" id="pms_getall_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PKMS ===================== -->
+    <section class="section" id="sec-pkms">
+      <p class="section-title">Product Knowledge Management System</p>
+      <p class="section-sub">All routes require an authenticated SUP (supervisor) session.</p>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/PKMS/upload_document</span><span class="needs-auth">SUP only</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field">
+              <label class="field-label">File (Ufile)</label>
+              <div class="file-drop"><input type="file" id="pkms_file"></div>
+            </div>
+            <div class="field"><label class="field-label">Document_ID (DID)</label><input type="text" id="pkms_did"></div>
+            <div class="field"><label class="field-label">Document_Name (DNM)</label><input type="text" id="pkms_dnm"></div>
+            <div class="field"><label class="field-label">Document_Type (DTYPE) — e.g. cat1/subcat2/</label><input type="text" id="pkms_dtype" placeholder="sop/packaging/"></div>
+            <button class="send" type="button" onclick="callPkmsUpload()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="pkms_upload_status">—</span></div>
+            <pre class="resp-body" id="pkms_upload_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method GET">GET</span><span class="path">/PKMS/all_documents</span><span class="needs-auth">SUP only</span></div>
+        <div class="card-body">
+          <div><button class="send" type="button" onclick="callPkmsAll()">Send</button></div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="pkms_all_status">—</span></div>
+            <pre class="resp-body" id="pkms_all_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/PKMS/{Document_ID}/Delete</span><span class="needs-auth">SUP only</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">Document_ID</label><input type="text" id="pkms_del_id"></div>
+            <button class="send" type="button" onclick="callPkmsDelete()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="pkms_del_status">—</span></div>
+            <pre class="resp-body" id="pkms_del_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CMS ===================== -->
+    <section class="section" id="sec-cms">
+      <p class="section-title">Complaint Management System</p>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/CMS/Create</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">CUS — Customer Name</label><input type="text" id="cms_create_cus"></div>
+            <div class="field"><label class="field-label">PID — Product ID</label><input type="text" id="cms_create_pid"></div>
+            <div class="field"><label class="field-label">CDES — Complaint Description</label><textarea id="cms_create_cdes"></textarea></div>
+            <button class="send" type="button" onclick="callCmsCreate()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="cms_create_status">—</span></div>
+            <pre class="resp-body" id="cms_create_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/CMS/return_all</span></div>
+        <div class="card-body">
+          <div>
+            <div class="row2">
+              <div class="field"><label class="field-label">i — start_index</label><input type="number" id="cms_ret_i" value="0"></div>
+              <div class="field"><label class="field-label">j — end_index</label><input type="number" id="cms_ret_j" value="10"></div>
+            </div>
+            <button class="send" type="button" onclick="callCmsReturnAll()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="cms_ret_status">—</span></div>
+            <pre class="resp-body" id="cms_ret_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method GET">GET</span><span class="path">/CMS/{Complaint_ID}</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">Complaint_ID</label><input type="text" id="cms_get_id"></div>
+            <button class="send" type="button" onclick="callCmsGet()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="cms_get_status">—</span></div>
+            <pre class="resp-body" id="cms_get_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/CMS/{Complaint_ID}/Update</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">Complaint_ID</label><input type="text" id="cms_upd_id"></div>
+            <div class="field"><label class="field-label">CDES — Updated Description</label><textarea id="cms_upd_cdes"></textarea></div>
+            <div class="field"><label class="field-label">CST — Updated Status</label><input type="text" id="cms_upd_cst" placeholder="e.g. In Progress / Resolved"></div>
+            <button class="send" type="button" onclick="callCmsUpdate()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="cms_upd_status">—</span></div>
+            <pre class="resp-body" id="cms_upd_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== RRS ===================== -->
+    <section class="section" id="sec-rrs">
+      <p class="section-title">RAG Retrieval System</p>
+      <p class="section-sub">Marked internal in the design doc — exposed here anyway for direct testing.</p>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/RRS/retrieve</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">query</label><textarea id="rrs_query" placeholder="Leaking shampoo bottle complaint"></textarea></div>
+            <button class="send" type="button" onclick="callRrsRetrieve()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="rrs_status">—</span></div>
+            <pre class="resp-body" id="rrs_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CTAS ===================== -->
+    <section class="section" id="sec-ctas">
+      <p class="section-title">Complaint Triage Agent System</p>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/CTAS/analyze</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">CID — Complaint_ID</label><input type="text" id="ctas_cid"></div>
+            <button class="send" type="button" onclick="callCtasAnalyze()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="ctas_status">—</span></div>
+            <pre class="resp-body" id="ctas_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== TGS ===================== -->
+    <section class="section" id="sec-tgs">
+      <p class="section-title">Ticket Generation System</p>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/TGS/create_ticket</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">CID — Complaint_ID</label><input type="text" id="tgs_create_cid"></div>
+            <div class="field"><label class="field-label">PRI — Priority</label><input type="text" id="tgs_create_pri" placeholder="High / Medium / Low"></div>
+            <div class="field"><label class="field-label">DEP — Department</label><input type="text" id="tgs_create_dep"></div>
+            <button class="send" type="button" onclick="callTgsCreate()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="tgs_create_status">—</span></div>
+            <pre class="resp-body" id="tgs_create_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/TGS/{Ticket_ID}/Update</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">Ticket_ID</label><input type="text" id="tgs_upd_id"></div>
+            <div class="field"><label class="field-label">STA — New Status</label><input type="text" id="tgs_upd_sta"></div>
+            <button class="send" type="button" onclick="callTgsUpdate()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="tgs_upd_status">—</span></div>
+            <pre class="resp-body" id="tgs_upd_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/TGS/{Ticket_ID}/Escalate</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">Ticket_ID</label><input type="text" id="tgs_esc_id"></div>
+            <button class="send" type="button" onclick="callTgsEscalate()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="tgs_esc_status">—</span></div>
+            <pre class="resp-body" id="tgs_esc_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method POST">POST</span><span class="path">/TGS/{Ticket_ID}/Close</span></div>
+        <div class="card-body">
+          <div>
+            <div class="field"><label class="field-label">Ticket_ID</label><input type="text" id="tgs_close_id"></div>
+            <button class="send" type="button" onclick="callTgsClose()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="tgs_close_status">—</span></div>
+            <pre class="resp-body" id="tgs_close_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== DAS ===================== -->
+    <section class="section" id="sec-das">
+      <p class="section-title">Dashboard Analytics System</p>
+
+      <div class="card">
+        <div class="card-head"><span class="method GET">GET</span><span class="path">/DAS/overview</span></div>
+        <div class="card-body">
+          <div><button class="send" type="button" onclick="callDasOverview()">Send</button></div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="das_ov_status">—</span></div>
+            <pre class="resp-body" id="das_ov_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="method GET">GET</span><span class="path">/DAS/agent_steps</span></div>
+        <div class="card-body">
+          <div><button class="send" type="button" onclick="callDasSteps()">Send</button></div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="das_steps_status">—</span></div>
+            <pre class="resp-body" id="das_steps_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== STAT ===================== -->
+    <section class="section" id="sec-stat">
+      <p class="section-title">Global Statistics</p>
+
+      <div class="card">
+        <div class="card-head"><span class="method GET">GET</span><span class="path">/STAT</span></div>
+        <div class="card-body">
+          <div><button class="send" type="button" onclick="callStat()">Send</button></div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="stat_status">—</span></div>
+            <pre class="resp-body" id="stat_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== RAW ===================== -->
+    <section class="section" id="sec-raw">
+      <p class="section-title">Raw Request</p>
+      <p class="section-sub">Fallback for any route not modeled above, or for poking at the API freeform.</p>
+
+      <div class="card">
+        <div class="card-body" style="grid-template-columns:1fr 1fr;">
+          <div>
+            <div class="row2">
+              <div class="field">
+                <label class="field-label">Method</label>
+                <select id="raw_method">
+                  <option>GET</option>
+                  <option>POST</option>
+                  <option>DELETE</option>
+                  <option>PUT</option>
+                </select>
+              </div>
+              <div class="field" style="flex:3">
+                <label class="field-label">Path (relative to base URL)</label>
+                <input type="text" id="raw_path" placeholder="/CMS/return_all">
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">JSON body (ignored for GET)</label>
+              <textarea id="raw_body" placeholder='{"key": "value"}' style="min-height:160px;"></textarea>
+            </div>
+            <button class="send" type="button" onclick="callRaw()">Send</button>
+          </div>
+          <div class="out-col">
+            <div class="out-head"><span class="field-label" style="margin:0">Response</span><span class="resp-status" id="raw_status">—</span></div>
+            <pre class="resp-body" id="raw_out">Response will appear here.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// ---------- nav ----------
+document.querySelectorAll('#navMenu .navlink').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#navMenu .navlink').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('main .section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.target).classList.add('active');
+  });
+});
+
+// ---------- state ----------
+let authToken = null; // captured from login response if returned in JSON body
+
+function baseUrl(){
+  let v = document.getElementById('baseUrlInput').value.trim();
+  if (v.endsWith('/')) v = v.slice(0, -1);
+  return v || 'http://localhost:8080';
+}
+
+function setToken(tok){
+  authToken = tok || null;
+  document.getElementById('tokenDisplay').textContent = authToken ? authToken : 'none';
+}
+document.getElementById('clearTokenBtn').addEventListener('click', () => setToken(null));
+
+// ---------- core fetch helper ----------
+// JWT is also expected to arrive as an httpOnly-style cookie per the design doc,
+// so credentials:'include' is used throughout. If the backend instead returns the
+// token in the JSON body, we also attach it as a Bearer header on later calls.
+async function apiCall(path, { method = 'GET', json = null, formData = null } = {}){
+  const url = baseUrl() + path;
+  const headers = {};
+  if (json !== null) headers['Content-Type'] = 'application/json';
+  if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+
+  const opts = {
+    method,
+    headers,
+    credentials: 'include'
+  };
+  if (formData) {
+    delete headers['Content-Type']; // browser sets multipart boundary
+    opts.body = formData;
+  } else if (json !== null) {
+    opts.body = JSON.stringify(json);
+  }
+
+  let res, text, data;
+  try {
+    res = await fetch(url, opts);
+  } catch (e) {
+    return { ok: false, status: 0, statusText: 'Network error / CORS blocked', data: { error: String(e) } };
+  }
+  text = await res.text();
+  try { data = JSON.parse(text); } catch (e) { data = text; }
+  return { ok: res.ok, status: res.status, statusText: res.statusText, data };
+}
+
+function renderResult(prefix, result){
+  const statusEl = document.getElementById(prefix + '_status');
+  const outEl = document.getElementById(prefix + '_out');
+  statusEl.classList.remove('s2xx', 's4xx', 's5xx');
+  if (result.status === 0) {
+    statusEl.textContent = 'ERR';
+    statusEl.classList.add('s5xx');
+  } else {
+    statusEl.textContent = result.status + ' ' + result.statusText;
+    if (result.status >= 200 && result.status < 300) statusEl.classList.add('s2xx');
+    else if (result.status >= 400 && result.status < 500) statusEl.classList.add('s4xx');
+    else if (result.status >= 500) statusEl.classList.add('s5xx');
+  }
+  let body = result.data;
+  if (typeof body !== 'string') body = JSON.stringify(body, null, 2);
+  outEl.textContent = body;
+  outEl.classList.add('has-data');
+}
+
+// ---------- ping ----------
+document.getElementById('pingBtn').addEventListener('click', async () => {
+  const dot = document.getElementById('connDot');
+  const txt = document.getElementById('connText');
+  dot.classList.remove('ok', 'err');
+  txt.textContent = 'checking…';
+  const result = await apiCall('/STAT', { method: 'GET' });
+  if (result.status >= 200 && result.status < 500 && result.status !== 0) {
+    dot.classList.add('ok');
+    txt.textContent = 'reachable (' + result.status + ')';
+  } else {
+    dot.classList.add('err');
+    txt.textContent = 'unreachable';
+  }
+});
+
+// ---------- AMS ----------
+async function callAmsLogin(){
+  const body = {
+    NAM: document.getElementById('ams_login_nam').value,
+    PAS: document.getElementById('ams_login_pas').value
+  };
+  const result = await apiCall('/AMS/login', { method: 'POST', json: body });
+  // attempt to pick up a token if the API returns one in the JSON body
+  if (result.data && typeof result.data === 'object') {
+    const tok = result.data.token || result.data.jwt || result.data.access_token;
+    if (tok) setToken(tok);
+  }
+  renderResult('ams_login', result);
+}
+
+async function callAmsSignup(){
+  const body = {
+    NAM: document.getElementById('ams_signup_nam').value,
+    PAS: document.getElementById('ams_signup_pas').value,
+    EMA: document.getElementById('ams_signup_ema').value,
+    ROL: document.getElementById('ams_signup_rol').value
+  };
+  const result = await apiCall('/AMS/signup', { method: 'POST', json: body });
+  renderResult('ams_signup', result);
+}
+
+async function callAmsUpdate(){
+  const user = document.getElementById('ams_upd_user').value;
+  const emaVal = document.getElementById('ams_upd_ema').value;
+  const pasVal = document.getElementById('ams_upd_pas').value;
+  const rolVal = document.getElementById('ams_upd_rol').value;
+  const body = {
+    EMA: emaVal === '' ? false : emaVal,
+    PAS: pasVal === '' ? false : pasVal
+  };
+  if (rolVal !== '') body.ROL = (rolVal === 'true');
+  const result = await apiCall('/AMS/' + encodeURIComponent(user) + '/Update', { method: 'POST', json: body });
+  renderResult('ams_upd', result);
+}
+
+async function callAmsLogout(){
+  const result = await apiCall('/AMS/logout', { method: 'POST' });
+  if (result.ok) setToken(null);
+  renderResult('ams_logout', result);
+}
+
+// ---------- PMS ----------
+async function callPmsCreate(){
+  const body = {
+    PNM: document.getElementById('pms_create_pnm').value,
+    PCAT: document.getElementById('pms_create_pcat').value,
+    PDES: document.getElementById('pms_create_pdes').value,
+    PSTA: document.getElementById('pms_create_psta').value
+  };
+  const result = await apiCall('/PMS/Create', { method: 'POST', json: body });
+  renderResult('pms_create', result);
+}
+
+async function callPmsUpdate(){
+  const pid = document.getElementById('pms_upd_pid').value;
+  const pstaVal = document.getElementById('pms_upd_psta').value;
+  const pdesVal = document.getElementById('pms_upd_pdes').value;
+  const body = {
+    PSTA: pstaVal === '' ? false : pstaVal,
+    PDES: pdesVal === '' ? false : pdesVal
+  };
+  const result = await apiCall('/PMS/' + encodeURIComponent(pid) + '/Update', { method: 'POST', json: body });
+  renderResult('pms_upd', result);
+}
+
+async function callPmsDelete(){
+  const pid = document.getElementById('pms_del_pid').value;
+  const result = await apiCall('/PMS/' + encodeURIComponent(pid) + '/Delete', { method: 'POST' });
+  renderResult('pms_del', result);
+}
+
+async function callPmsGetAll(){
+  const body = {
+    i: Number(document.getElementById('pms_getall_i').value),
+    j: Number(document.getElementById('pms_getall_j').value)
+  };
+  const result = await apiCall('/PMS/Get_ALL', { method: 'POST', json: body });
+  renderResult('pms_getall', result);
+}
+
+// ---------- PKMS ----------
+async function callPkmsUpload(){
+  const fileInput = document.getElementById('pkms_file');
+  const meta = {
+    DID: document.getElementById('pkms_did').value,
+    DNM: document.getElementById('pkms_dnm').value,
+    DTYPE: document.getElementById('pkms_dtype').value
+  };
+  const fd = new FormData();
+  if (fileInput.files[0]) fd.append('Ufile', fileInput.files[0]);
+  fd.append('metaData', JSON.stringify(meta));
+  const result = await apiCall('/PKMS/upload_document', { method: 'POST', formData: fd });
+  renderResult('pkms_upload', result);
+}
+
+async function callPkmsAll(){
+  const result = await apiCall('/PKMS/all_documents', { method: 'GET' });
+  renderResult('pkms_all', result);
+}
+
+async function callPkmsDelete(){
+  const id = document.getElementById('pkms_del_id').value;
+  const result = await apiCall('/PKMS/' + encodeURIComponent(id) + '/Delete', { method: 'POST' });
+  renderResult('pkms_del', result);
+}
+
+// ---------- CMS ----------
+async function callCmsCreate(){
+  const body = {
+    CUS: document.getElementById('cms_create_cus').value,
+    PID: document.getElementById('cms_create_pid').value,
+    CDES: document.getElementById('cms_create_cdes').value
+  };
+  const result = await apiCall('/CMS/Create', { method: 'POST', json: body });
+  renderResult('cms_create', result);
+}
+
+async function callCmsReturnAll(){
+  const body = {
+    i: Number(document.getElementById('cms_ret_i').value),
+    j: Number(document.getElementById('cms_ret_j').value)
+  };
+  const result = await apiCall('/CMS/return_all', { method: 'POST', json: body });
+  renderResult('cms_ret', result);
+}
+
+async function callCmsGet(){
+  const id = document.getElementById('cms_get_id').value;
+  const result = await apiCall('/CMS/' + encodeURIComponent(id), { method: 'GET' });
+  renderResult('cms_get', result);
+}
+
+async function callCmsUpdate(){
+  const id = document.getElementById('cms_upd_id').value;
+  const body = {
+    CDES: document.getElementById('cms_upd_cdes').value,
+    CST: document.getElementById('cms_upd_cst').value
+  };
+  const result = await apiCall('/CMS/' + encodeURIComponent(id) + '/Update', { method: 'POST', json: body });
+  renderResult('cms_upd', result);
+}
+
+// ---------- RRS ----------
+async function callRrsRetrieve(){
+  const body = { query: document.getElementById('rrs_query').value };
+  const result = await apiCall('/RRS/retrieve', { method: 'POST', json: body });
+  renderResult('rrs', result);
+}
+
+// ---------- CTAS ----------
+async function callCtasAnalyze(){
+  const body = { CID: document.getElementById('ctas_cid').value };
+  const result = await apiCall('/CTAS/analyze', { method: 'POST', json: body });
+  renderResult('ctas', result);
+}
+
+// ---------- TGS ----------
+async function callTgsCreate(){
+  const body = {
+    CID: document.getElementById('tgs_create_cid').value,
+    PRI: document.getElementById('tgs_create_pri').value,
+    DEP: document.getElementById('tgs_create_dep').value
+  };
+  const result = await apiCall('/TGS/create_ticket', { method: 'POST', json: body });
+  renderResult('tgs_create', result);
+}
+
+async function callTgsUpdate(){
+  const id = document.getElementById('tgs_upd_id').value;
+  const body = { STA: document.getElementById('tgs_upd_sta').value };
+  const result = await apiCall('/TGS/' + encodeURIComponent(id) + '/Update', { method: 'POST', json: body });
+  renderResult('tgs_upd', result);
+}
+
+async function callTgsEscalate(){
+  const id = document.getElementById('tgs_esc_id').value;
+  const result = await apiCall('/TGS/' + encodeURIComponent(id) + '/Escalate', { method: 'POST' });
+  renderResult('tgs_esc', result);
+}
+
+async function callTgsClose(){
+  const id = document.getElementById('tgs_close_id').value;
+  const result = await apiCall('/TGS/' + encodeURIComponent(id) + '/Close', { method: 'POST' });
+  renderResult('tgs_close', result);
+}
+
+// ---------- DAS ----------
+async function callDasOverview(){
+  const result = await apiCall('/DAS/overview', { method: 'GET' });
+  renderResult('das_ov', result);
+}
+
+async function callDasSteps(){
+  const result = await apiCall('/DAS/agent_steps', { method: 'GET' });
+  renderResult('das_steps', result);
+}
+
+// ---------- STAT ----------
+async function callStat(){
+  const result = await apiCall('/STAT', { method: 'GET' });
+  renderResult('stat', result);
+}
+
+// ---------- RAW ----------
+async function callRaw(){
+  const method = document.getElementById('raw_method').value;
+  const path = document.getElementById('raw_path').value;
+  const bodyText = document.getElementById('raw_body').value.trim();
+  let json = null;
+  if (method !== 'GET' && bodyText !== '') {
+    try { json = JSON.parse(bodyText); }
+    catch(e) {
+      document.getElementById('raw_status').textContent = 'invalid JSON';
+      document.getElementById('raw_out').textContent = String(e);
+      return;
+    }
+  }
+  const result = await apiCall(path, { method, json });
+  renderResult('raw', result);
+}
+</script>
+
+</body>
+</html>

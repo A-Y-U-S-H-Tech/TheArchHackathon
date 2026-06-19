@@ -1,3 +1,4 @@
+from dms_instance import dms
 from fastapi import APIRouter
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
@@ -5,7 +6,7 @@ import jwt
 from uuid import uuid4
 from datetime import datetime,timezone,timedelta
 
-from app.server import dms
+router = APIRouter()
 
 Scerete_Key = str(uuid4)
 def GenJWT(NAM:str,ROL:str)->str:
@@ -22,9 +23,8 @@ def JWT_Validate(jwt:dict)->bool:
     return False
 
 
-router = APIRouter()
 
-ALLOWED_PATH = "/AUTH/login","/AUTH/signup"
+ALLOWED_PATH = "/AMS/login","/AMS/signup","/"
 
 async def Auth_MiddleWare(request:Request,call_next):
     _path = request.url.path
@@ -44,18 +44,18 @@ async def Auth_MiddleWare(request:Request,call_next):
         else:
             return JSONResponse("Not Auth",401)
     
-@router.get("/AMS/login")
+@router.post("/AMS/login")
 async def auth_login(request:Request):
     _cred = await request.json()
     if(dms.Check_Validate_User(_cred["NAM"],_cred["PAS"])):
         response = JSONResponse("ok",200)
-        _jwt = GenJWT(_cred[NAM],dms.Get_User_role(_cred[NAM]))#type:ignore
+        _jwt = GenJWT(_cred["NAM"],dms.Get_User_role(_cred["NAM"]))#type:ignore
         response.set_cookie(
-            "session",
+            "JWT",
             _jwt,
             max_age=3600,
             httponly=True,
-            secure=True,
+            secure=False,
             samesite="lax"
         )
         return response
@@ -67,7 +67,7 @@ async def auth_signup(request:Request):
     _cred = await request.json()
     if _cred["ROL"]  == "CSE":
         if "session" in request.cookies.keys():
-            _jwt = jwt.decode(request.cookies.get("session")) #type:ignore
+            _jwt = jwt.decode(request.cookies.get("JWT"),Scerete_Key,"HS256") #type:ignore
             if _jwt["ROL"] != "SUP":
                 return JSONResponse("Not Auth",401)
     if _cred["ROL"] == "SUP":
