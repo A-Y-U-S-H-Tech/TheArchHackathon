@@ -60,7 +60,8 @@ async def auth_login(request:Request):
             max_age=3600,
             httponly=True,
             secure=True,
-            samesite="lax"
+            samesite="none",
+            path="/"
         )
         return response
     else:
