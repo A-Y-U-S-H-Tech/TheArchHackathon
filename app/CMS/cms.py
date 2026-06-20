@@ -8,7 +8,7 @@ router = APIRouter()
 @router.post("/CMS/Create")
 async def CMS_Create(request:Request):
     _data:dict = await request.json()
-    _flag = dms.Create_Complaint(_data["CUS"],_data["PID"],_data["CDES"],False,None,datetime.now().timestamp())
+    _flag = dms.Create_Complaint(_data["CUS"],_data["PID"],_data["CDES"],False,None,datetime.now().timestamp(),request.state.UNAM)
     if _flag:
         return JSONResponse("ok",200)
     return JSONResponse("falied",400)

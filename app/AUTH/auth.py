@@ -31,6 +31,8 @@ async def Auth_MiddleWare(request:Request,call_next):
     if _path in ALLOWED_PATH:
         return await call_next(request)
     else:
+        if request.method == "OPTIONS":
+           return await call_next(request)
         if "JWT" in request.cookies.keys():
             _decode =''
             try :
@@ -38,6 +40,8 @@ async def Auth_MiddleWare(request:Request,call_next):
             except:
                 return JSONResponse("Not auth",401)
             if dms.Check_User(_decode["NAM"]) and JWT_Validate(_decode):
+                request.state.UNAM = _decode["NAM"]
+                request.state.UROL = _decode["ROL"]
                 return await call_next(request)
             else:
                 return JSONResponse("Invalid",401)

@@ -13,7 +13,7 @@
 - **Data Management System (DMS)** — Independent
 - **Authentication Magement System (AMS)** - Level 0
 - **Product Mangement System (PMS)** - Level 0
-
+- **User Resource Serving System (URSS)** - Level 4
 ---
 
 ## Roles of Each System
@@ -122,6 +122,11 @@ manages all the account and authentication related tasks
   4. Logout
   5. Authentication Token
 
+## 12. User Resource Serving System
+  Gives all the resource that a Coustomer needed for his request which are spread across varies system
+  1. Gives all there Complains
+  2. Gives status on the Complains
+  3. Gives Resolution of there isuue
 ---
 
 ## Entity Structures
@@ -195,10 +200,29 @@ manages all the account and authentication related tasks
     ROL:users_role,
 }
 
+
 ---
 
 ## System Definitions
-##
+
+## User Resource Serving System
+  - This system is Protected and can't be accessed without authentication
+  - this serves resources based on user which is retrived via the JWT
+  - /URSS/Complain/return_all POST:-
+    - It returns all the Complains Filed via user in range of i to j
+    - It requires the following Json request
+      - {
+        i:Start_index,
+        j:stop_index,
+      }
+      - put i = -1 and j=-1 to get all the records
+    - it returns a list of complains filled
+  - /URSS/Complain/latest GET:-
+    - it Returns the Latest Complain filled by the user
+  - /URSS/Complain_Progress/{Complain_ID} (GET):-
+    - the Complain_ID refres to the Complain ID of complain user filed and who's progress he want to see
+    - it returns a list of tickets where increasing ticket id mean the next action 
+    - if the Complain CST is true then complain is resolved else it is pending new action
 ## Product Managment System
   - Only SUP roles can call this resoureces and fucnctions
   - /PMS/Create POST:-

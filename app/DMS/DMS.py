@@ -157,7 +157,7 @@ class DMS:
         except PostgrestAPIError as e:
             return False 
 
-    def Create_Complaint(self,CUS,PID,CDES,CST,CSEV,CDT):
+    def Create_Complaint(self,CUS,PID,CDES,CST,CSEV,CDT,CUSER):
         try:
             self.client.table("Complaints").insert(
                 {
@@ -165,7 +165,8 @@ class DMS:
                     "CDES":CDES,
                     "PID":PID,
                     "CST":CST,
-                    "CSEV":CSEV
+                    "CSEV":CSEV,
+                    "USER":CUSER
                 }
             ).execute()
             return True
@@ -261,6 +262,43 @@ class DMS:
         #     return (True,self.complaints[CID].get_dict())
         # else:
         #     return (False,{})
+    def Get_UserComplains(self,UNAM,i,j):
+        if i>j:
+            return (False,[])
+        if i==-1 and j==-1:
+            try:
+                _return = self.client.table("Complaints").select("*"
+                ).eq("USER",UNAM).execute()
+                return (True,_return.data)
+            except PostgrestAPIError as e:
+                print(e)
+                return (False,[]) 
+        #     return (True,list(v.get_dict() for v in self.complaints.values()))
+        try:
+            _return = self.client.table("Complaints").select("*"
+            ).eq("USER",UNAM).range(i,j).execute()
+            return (True,_return.data)
+        except PostgrestAPIError as e:
+            return (False,[])
+        
+    def Get_UserComplain(self,UNAM,CID):
+        try:
+            CID = int(CID)
+            _request = self.client.table("Complaints").select("*"
+            ).eq("USER",UNAM).eq("CID",CID).execute()
+            print(_request)
+            return (True,_request.data[0])
+        except PostgrestAPIError as e:
+            return False 
+    
+    def Get_UserComplainLatest(self,UNAM):
+        try:
+            _request = self.client.table("Complaints").select("*"
+            ).eq("USER",UNAM).order("CDT",desc=True).range(0,2).execute()
+            print(_request)
+            return (True,_request.data[0])
+        except PostgrestAPIError as e:
+            return False        
 
     def Check_Complaint(self,CID):
         try:
@@ -358,6 +396,15 @@ class DMS:
             ).eq("TID",TID).execute()
             print(_request)
             return (True,_request.data[0])
+        except PostgrestAPIError as e:
+            return False 
+    
+    def Get_UserTickets(self,UNAM,CID):
+        try:
+            _request = self.client.table("Ticket").select("*"
+            ).eq("CID",CID).order("TID",desc=False).execute()
+            print(_request)
+            return (True,_request.data)
         except PostgrestAPIError as e:
             return False 
     
