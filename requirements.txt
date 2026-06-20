@@ -6,6 +6,5 @@ supabase==2.31.0
 chromadb
 google-generativeai
 unstructured[pdf]
-pdfminer.six==20231228
 PyJWT
 opencv-python-headless
