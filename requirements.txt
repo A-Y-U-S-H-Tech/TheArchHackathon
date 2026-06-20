@@ -8,3 +8,4 @@ google-generativeai
 unstructured[pdf]
 pdfminer.six==20231228
 PyJWT
+opencv-python-headless
