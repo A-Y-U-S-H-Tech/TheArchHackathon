@@ -54,5 +54,5 @@ app.include_router(ctas.router)
 app.include_router(urss.router)
 
 if(__name__ == "__main__"):
-    uvicorn.run("server:app",host="0.0.0.0",reload=True,port=int(os.environ.get("PORT")))#type:ignore
+    uvicorn.run("server:app",host="0.0.0.0",port=int(os.environ.get("PORT")))#type:ignore
     

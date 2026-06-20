@@ -59,7 +59,7 @@ async def auth_login(request:Request):
             _jwt,
             max_age=3600,
             httponly=True,
-            secure=False,
+            secure=True,
             samesite="lax"
         )
         return response
