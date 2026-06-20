@@ -1,13 +1,10 @@
 fastapi
-uvicorn
-supabase
+uvicorn[standard]
 python-multipart
+python-dotenv
+supabase==2.31.0
 chromadb
 google-generativeai
-protobuf==3.19.6
-PyJWT==2.13.0
-python-dotenv==1.2.2
-supabase==2.31.0
 unstructured[pdf]
-uvicorn==0.49.0
 pdfminer.six==20231228
+PyJWT
