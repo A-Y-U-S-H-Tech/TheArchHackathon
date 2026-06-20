@@ -5,6 +5,7 @@ python-dotenv
 supabase==2.31.0
 chromadb
 google-generativeai
+google-genai
 unstructured[pdf]
 PyJWT
 opencv-python-headless
