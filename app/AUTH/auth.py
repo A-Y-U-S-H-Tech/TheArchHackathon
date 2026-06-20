@@ -61,7 +61,8 @@ async def auth_login(request:Request):
             httponly=True,
             secure=True,
             samesite="none",
-            path="/"
+            path="/",
+            partitioned=True
         )
         return response
     else:

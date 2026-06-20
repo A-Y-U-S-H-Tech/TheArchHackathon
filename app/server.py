@@ -21,7 +21,8 @@ origins = [
     "http://localhost:3000",      # React default port
     "http://localhost:5173",      # Vite / Vue default port
     "https://yourfrontend.com",   # Production domain,
-    "https://the-arch-hackathon-frontend-git-main-thekingdom.vercel.app"
+    "https://the-arch-hackathon-frontend-git-main-thekingdom.vercel.app",
+    "https://the-arch-hackathon-frontend.vercel.app"
 ]
 
 # 2. Add the CORS middleware to your FastAPI app
