@@ -3,6 +3,6 @@
   "steps": {
   },
   "deploy": {
-    "startCommand": "python app.main"
+    "startCommand": "python app/server.py"
   }
 }
