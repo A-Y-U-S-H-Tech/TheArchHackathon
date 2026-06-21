@@ -24,7 +24,8 @@ def URSS_returnLatest(request:Request):
 
 @router.get("/URSS/Complain_Progress/{Complain_ID}")
 def URSS_ComplainUpdate(Complain_ID:int,request:Request):
-    _flag = dms.Get_UserTickets(request.state.UNAM,Complain_ID)
+    adm = (request.state.UROL == "CSE" or request.state.UROL == "SUP")
+    _flag = dms.Get_UserTickets(request.state.UNAM,Complain_ID,adm)
     if _flag:
         return JSONResponse(_flag[1],200)
     else:

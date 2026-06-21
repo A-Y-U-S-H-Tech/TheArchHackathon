@@ -159,8 +159,8 @@ class CTASDecision:
 
     def to_dict(self) -> Dict[str, Any]:
         payload = asdict(self)
-        payload["severity"] = self.severity.value
-        payload["priority"] = self.priority.value
+        payload["severity"] = self.severity
+        payload["priority"] = self.severity
         payload["evidence"] = [asdict(item) for item in self.evidence]
         return payload
 
@@ -303,7 +303,7 @@ class CTASAgent(GeminiClient):
         ticket = dms.Create_Ticket(
             cid,
             department,
-            str(priority.value),
+            str(priority),
             False,
             datetime.now().timestamp(),
             recommended_action+"\n"+root_cause

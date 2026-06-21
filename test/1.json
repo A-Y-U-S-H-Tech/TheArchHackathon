@@ -1,49 +1,68 @@
 {
-  "cid": "0",
-  "category": "Packaging Issue",
-  "severity": "Medium",
-  "department": "Quality Control",
-  "priority": "P2",
-  "recommended_action": "Investigate the specific batch of Shopoe bottles for manufacturing defects or sealing issues, and initiate a product return/replacement for the customer.",
-  "root_cause": "Defect in bottle manufacturing or sealing process.",
-  "ticket_created": true,
-  "tid": "1",
-  "confidence": 0.9,
-  "evidence": [
+  "triage_analysis": {
+    "complaint_id": "9",
+    "user_name": "ayush",
+    "product_id": "1",
+    "product_name": "Sampoe bottle",
+    "issue_summary": "Shampoo bottle leaking from cap with tampered seal.",
+    "classification": "packaging/leakage",
+    "risk_level": "high",
+    "reasoning": "The report of a tampered seal and leakage indicates a potential safety or quality control issue, requiring immediate investigation."
+  },
+  "tools_used": [
     {
-      "source": "CMS",
-      "text": "the Shopoe bottle is leaking"
+      "tool": "get_complaint",
+      "reason": "To retrieve the details of complaint ID 9."
     },
     {
-      "source": "RAG",
-      "text": "[['2. Capture customer identity, product reference, issue description, purchase date, and contact channel.\\n\\n3. Run validation: required fields must not be empty and product reference must be consistent with the product catalog.\\n\\n4. Classify the complaint into one primary bucket: packaging, leakage, quality, taste/odor, labeling, service, or delivery.\\n\\n5. Tag any safety indicator, regulatory concern, or potential batch-wide issue for immediate review.', '6. Forward the complaint to the triage system so that SOP retrieval and similar-case retrieval can be performed.\\n\\n7. If the complaint is incomplete, mark it as pending clarification and request missing data from the reporter.\\n\\n6. Quality checks / decision gates l Complaint ID is generated and stored before routing.\\n\\nl Product ID exists in master data or the record is flagged as unverified.\\n\\nl Safety-related complaints are never closed at intake stage.', 'FMCG Copilot SOP Data Pack\\n\\nSOP 01 - Complaint Intake and Triage\\n\\"
+      "tool": "get_product",
+      "reason": "To identify the product associated with the complaint."
     },
     {
-      "source": "Gemini",
-      "text": "{\"category\": \"Packaging Issue\", \"severity\": \"Medium\", \"department\": \"Quality Control\", \"confidence\": 0.9, \"root_cause\": \"Defect in bottle manufacturing or sealing process.\"}"
-    },
-    {
-      "source": "CTAS",
-      "text": "Investigate the specific batch of Shopoe bottles for manufacturing defects or sealing issues, and initiate a product return/replacement for the customer."
+      "tool": "rag_retrieve",
+      "reason": "To obtain SOP guidelines for classifying and handling the complaint."
     }
   ],
-  "gemini_output": {
-    "category": "Packaging Issue",
-    "severity": "Medium",
-    "department": "Quality Control",
-    "recommended_action": "Investigate the specific batch of Shopoe bottles for manufacturing defects or sealing issues, and initiate a product return/replacement for the customer.",
-    "root_cause": "Defect in bottle manufacturing or sealing process.",
-    "confidence": 0.9,
-    "priority": "P2"
+  "sample_ticket": {
+    "TID": "SAMPLE",
+    "CID": "9",
+    "DEP": "Quality Control",
+    "PRI": "P3",
+    "STA": "Open",
+    "DES": "Sample ticket for complaint triage: Complaint requires review"
   },
-  "raw_retrieval": "[['2. Capture customer identity, product reference, issue description, purchase date, and contact channel.\\n\\n3. Run validation: required fields must not be empty and product reference must be consistent with the product catalog.\\n\\n4. Classify the complaint into one primary bucket: packaging, leakage, quality, taste/odor, labeling, service, or delivery.\\n\\n5. Tag any safety indicator, regulatory concern, or potential batch-wide issue for immediate review.', '6. Forward the complaint to the triage system so that SOP retrieval and similar-case retrieval can be performed.\\n\\n7. If the complaint is incomplete, mark it as pending clarification and request missing data from the reporter.\\n\\n6. Quality checks / decision gates l Complaint ID is generated and stored before routing.\\n\\nl Product ID exists in master data or the record is flagged as unverified.\\n\\nl Safety-related complaints are never closed at intake stage.', 'FMCG Copilot SOP Data Pack\\n\\nSOP 01 - Complaint Intake and Triage\\n\\nSOP 01 - Complaint Intake and Triage\\n\\nDocument Code: FMCG-COP-CMS-001 | Version: 1.0 | Owner: Customer Service Operations']]",
-  "complaint_snapshot": {
-    "CID": 0,
-    "CUS": "Ayush Mishra",
-    "PID": "0",
-    "CDES": "the Shopoe bottle is leaking",
-    "CST": false,
-    "CSEV": null,
-    "CDT": 1781771046.259428
-  }
+  "cid": "9",
+  "complaint_found": false,
+  "product_found": false,
+  "complaint": {},
+  "product": {},
+  "retrieval": {
+    "query": "",
+    "retrieved_context": ""
+  },
+  "triage": {},
+  "ticket": {
+    "should_create": false,
+    "reason": "Ticket creation is disabled."
+  },
+  "tool_trace": [
+    {
+      "step": 1,
+      "tool": "get_complaint",
+      "reason": "Need the complaint record to identify product, description, and current status.",
+      "observation": "Fetched record with fields: CID, CUS, PID, CDES, CST, CSEV"
+    },
+    {
+      "step": 2,
+      "tool": "get_product",
+      "reason": "Need product metadata to improve classification and resolution choice.",
+      "observation": "Fetched record with fields: PID, PNM, PCAT, PDES, PSTA"
+    },
+    {
+      "step": 3,
+      "tool": "rag_retrieve",
+      "reason": "Need SOPs, product knowledge, and similar complaints for evidence-based triage.",
+      "observation": "Retrieved RAG context (1121 chars)."
+    }
+  ]
 }

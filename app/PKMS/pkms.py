@@ -31,7 +31,11 @@ async def PKMS_UploadDocument(Ufile:UploadFile,metaData:str = Form()):
 
 @router.post("PKMS/all_documents")
 async def PKMS_getALL():
-    pass
+    _data = dms.Get_KDocument()
+    if _data:
+        return JSONResponse(_data,200)
+    else:
+        return JSONResponse([],400)
 
 @router.post("PKMS/{Document_ID}/Delete")
 async def PKMS_Delete():

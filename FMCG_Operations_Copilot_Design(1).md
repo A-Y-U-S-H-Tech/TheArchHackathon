@@ -167,7 +167,8 @@ manages all the account and authentication related tasks
     DEP: Assigned_Department,
     PRI: Priority_Level,
     STA: Ticket_Status,
-    CRT: Creation_Time
+    CRT: Creation_Time,
+    ITO: internal_only(True or False)
 }
 ```
 
@@ -483,15 +484,79 @@ Agent actions:
 6. Recommend resolution
 
 Response:
-
+the below response is given with an example data
 ```json
 {
-  "category": "Packaging Issue",
-  "severity": "High",
-  "department": "Quality Control",
-  "recommended_action": "Immediate Inspection"
+  "triage_analysis": {
+    "complaint_id": "9",
+    "user_name": "ayush",
+    "product_id": "1",
+    "product_name": "Sampoe bottle",
+    "issue_summary": "Shampoo bottle leaking from cap with tampered seal.",
+    "classification": "packaging/leakage",
+    "risk_level": "high",
+    "reasoning": "The report of a tampered seal and leakage indicates a potential safety or quality control issue, requiring immediate investigation."
+  },
+  "tools_used": [
+    {
+      "tool": "get_complaint",
+      "reason": "To retrieve the details of complaint ID 9."
+    },
+    {
+      "tool": "get_product",
+      "reason": "To identify the product associated with the complaint."
+    },
+    {
+      "tool": "rag_retrieve",
+      "reason": "To obtain SOP guidelines for classifying and handling the complaint."
+    }
+  ],
+  "sample_ticket": {
+    "TID": "SAMPLE",
+    "CID": "9",
+    "DEP": "Quality Control",
+    "PRI": "P3",
+    "STA": "Open",
+    "DES": "Sample ticket for complaint triage: Complaint requires review"
+  },
+  "cid": "9",
+  "complaint_found": false,
+  "product_found": false,
+  "complaint": {},
+  "product": {},
+  "retrieval": {
+    "query": "",
+    "retrieved_context": ""
+  },
+  "triage": {},
+  "ticket": {
+    "should_create": false,
+    "reason": "Ticket creation is disabled."
+  },
+  "tool_trace": [
+    {
+      "step": 1,
+      "tool": "get_complaint",
+      "reason": "Need the complaint record to identify product, description, and current status.",
+      "observation": "Fetched record with fields: CID, CUS, PID, CDES, CST, CSEV"
+    },
+    {
+      "step": 2,
+      "tool": "get_product",
+      "reason": "Need product metadata to improve classification and resolution choice.",
+      "observation": "Fetched record with fields: PID, PNM, PCAT, PDES, PSTA"
+    },
+    {
+      "step": 3,
+      "tool": "rag_retrieve",
+      "reason": "Need SOPs, product knowledge, and similar complaints for evidence-based triage.",
+      "observation": "Retrieved RAG context (1121 chars)."
+    }
+  ]
 }
+Note there can be n number of tool use and sample ticket is an AI generated ticket for refrence for the consumer Service Executive
 ```
+This Request gives the Coustomer Sericve Executive a view on how the AI come to the conclution with each step like the chatgpt and cluade thought process and gives a sample ticket the Coustomer Service Executive and review and edit before sending it to TGS via call from the client side
 
 ---
 
@@ -506,7 +571,8 @@ Request:
   "CID": "Complaint_ID",
   "PRI": "Priority",
   "DEP": "Depatment",
-  "DES": "Description of ticket"
+  "DES": "Description of ticket",
+  "ITO": "Internal only ticket (True or False)"
 }
 ```
 

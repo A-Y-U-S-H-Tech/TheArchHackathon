@@ -92,3 +92,32 @@ class USER:
             "EMA":self.EMA,
             "ROL":self.ROL      
          }
+class Stats:
+    def __init__(self,TP,TD,TC,TT,TR) -> None:
+        self.TP = TP
+        self.TD = TD
+        self.TC = TC
+        self.TT = TT
+        self.TR = TR
+    def get_dict(self):
+         return {
+        "total_products": self.TP,
+        "total_documents":self.TD,
+        "total_complaints": self.TC,
+        "total_tickets": self.TT,
+        "total_resolved": self.TR
+        }   
+
+class DAS_overview:
+    def __init__(self,TC=0,RC=0,OC=0,HS=0) -> None:
+          self.TC = TC
+          self.RC = RC
+          self.OC = OC
+          self.HS = HS
+    def get_dict(self):
+        return {
+            "total_complaints": self.TC,
+            "resolved_complaints": self.RC,
+            "open_complaints": self.OC,
+            "high_severity": self.HS
+        }

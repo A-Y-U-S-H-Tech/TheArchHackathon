@@ -105,9 +105,9 @@ class DMS:
         #     return False
     def Get_User_role(self,NAM):
         try:
-            self.client.table("User").select("ROL"
+            _response = self.client.table("User").select("ROL"
             ).eq("NAM",NAM).execute()
-            return True
+            return _response.data[0]["ROL"]
         except PostgrestAPIError as e:
             return False 
         # if NAM in self.users.keys():
@@ -309,7 +309,7 @@ class DMS:
                 return False 
         # return int(CID) in self.complaints.keys()
     
-    def Create_Ticket(self,CID,DEP,PRI,STA,CRT,DES=None):
+    def Create_Ticket(self,CID,DEP,PRI,STA,CRT,DES=None,ITO=False):
         try:
             self.client.table("Ticket").insert(
                 {
@@ -317,7 +317,8 @@ class DMS:
                     "DEP":DEP,
                     "PRI":PRI,
                     "STA":STA,
-                    "DES":DES
+                    "DES":DES,
+                    "ITO":ITO
                 }
             ).execute()
             return True
@@ -341,7 +342,7 @@ class DMS:
         #     return True
         # else:
         #     return False
-    def Update_Ticket(self,TID,CID,DEP,PRI,STA,CRT):
+    def Update_Ticket(self,TID,CID,DEP,PRI,STA,CRT,DES):
         _query = {}
         try:
             if(CID):
@@ -352,6 +353,8 @@ class DMS:
               _query[ "PRI"] = PRI
             if(STA):
                 _query["STA"] = STA
+            if DES:
+                _query["DES"] = DES
             self.client.table("Ticket").insert(
                 _query
             ).execute()
@@ -399,14 +402,23 @@ class DMS:
         except PostgrestAPIError as e:
             return False 
     
-    def Get_UserTickets(self,UNAM,CID):
-        try:
-            _request = self.client.table("Ticket").select("*"
-            ).eq("CID",CID).order("TID",desc=False).execute()
-            print(_request)
-            return (True,_request.data)
-        except PostgrestAPIError as e:
-            return False 
+    def Get_UserTickets(self,UNAM,CID,ADM):
+        if ADM:
+            try:
+                _request = self.client.table("Ticket").select("*"
+                ).eq("CID",CID).order("TID",desc=False).execute()
+                print(_request)
+                return (True,_request.data)
+            except PostgrestAPIError as e:
+                return False             
+        else:
+            try:
+                _request = self.client.table("Ticket").select("*"
+                ).eq("CID",CID).eq("ITO",False).order("TID",desc=False).execute()
+                print(_request)
+                return (True,_request.data)
+            except PostgrestAPIError as e:
+                return False 
     
     def Create_KDocument(self,DNM,DTYPE,DPATH):
         try:
@@ -435,7 +447,54 @@ class DMS:
         #     return True
         # else:
         #     return False
-        
+    def Get_KDocument(self):
+        try:
+            _return = self.client.table("KnowledgeDocument").select("*"
+            ).execute()
+            return _return.data
+        except PostgrestAPIError as e:
+            return False
+    def GET_STAT(self):
+        TP = self.client.table("Products").select("PID",count="exact",head=True).execute().count
+        TD =self.client.table("KnowledgeDocument").select("DID",count="exact",head=True).execute().count
+        TC=self.client.table("Complaints").select("CID",count="exact",head=True).execute().count
+        TT =self.client.table("Ticket").select("TID",count="exact",head=True).execute().count
+        TR =self.client.table("Ticket").select("TID",count="exact",head=True).eq("STA",True).execute().count
+        return Stats(TP,TD,TC,TT,TR).get_dict()
+
+    def Get_DasOverview(self):
+        TC = (
+            self.client.table("Complaints")
+            .select("CID", count="exact")
+            .execute()
+            .count or 0
+        )
+
+        RC = (
+            self.client.table("Complaints")
+            .select("CID", count="exact")
+            .neq("CST", "false")   # use "true" if STA is stored as text
+            .execute()
+            .count or 0
+        )
+
+        OC = (
+            self.client.table("Complaints")
+            .select("CID", count="exact")
+            .eq("CST", "false")  # use "false" if STA is stored as text
+            .execute()
+            .count or 0
+        )
+
+        HS = (
+            self.client.table("Complaints")
+            .select("CID", count="exact")
+            .eq("CSEV", "high")
+            .execute()
+            .count or 0
+        )
+        return DAS_overview(TC,RC,OC,HS).get_dict()
+
     def Create_RContext(self,QUERY,CONTEXT):
         self.RContent[self.counter_RID] = Retrived_context(self.counter_RID,QUERY,CONTEXT)
         return True

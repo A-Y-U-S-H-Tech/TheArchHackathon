@@ -6,8 +6,10 @@ from PMS import pms
 from PKMS import pkms
 from dms_instance import dms
 from RRS import rrs
-from CTAS import ctas
+from CTAS import ctas,ctas2
 from URSS import urss
+from DAS import das
+from STAT import stat
 import uvicorn
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,6 +20,7 @@ import os
 app = FastAPI()
 
 origins = [
+    "http://0.0.0.0:8080/",
     "http://localhost:3000",      # React default port
     "http://localhost:5173",      # Vite / Vue default port
     "https://yourfrontend.com",   # Production domain,
@@ -39,9 +42,9 @@ app.add_middleware(
 @app.middleware("http")
 async def auth_middleware(request, call_next):
         return await auth.Auth_MiddleWare(request, call_next)
-# @app.get("/")
-# def roo():
-#       return FileResponse("app/HTML/fmcg_test_console.html")
+@app.get("/")
+def roo():
+      return FileResponse("app/HTML/fmcg_test_console.html")
 
 
 dms.Create_User("ayush","08110700","123@gmail.com","SUP")
@@ -52,8 +55,11 @@ app.include_router(tgs.router)
 app.include_router(pms.router)
 app.include_router(pkms.router)
 app.include_router(rrs.router)
-app.include_router(ctas.router)
+app.include_router(ctas2.router)
+# app.include_router(ctas.router)
 app.include_router(urss.router)
+app.include_router(stat.router)
+app.include_router(das.router)
 
 if(__name__ == "__main__"):
     uvicorn.run("server:app",host="0.0.0.0",port=int(os.environ.get("PORT")))#type:ignore
