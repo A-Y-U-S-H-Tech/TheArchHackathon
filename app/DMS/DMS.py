@@ -156,6 +156,14 @@ class DMS:
             return (True,_request.data[0])
         except PostgrestAPIError as e:
             return False 
+        
+    def Delete_Product(self,PID):
+        try:
+            self.client.table("Products").delete(
+            ).eq("PID",PID).execute()
+            return True
+        except PostgrestAPIError as e:
+            return False       
 
     def Create_Complaint(self,CUS,PID,CDES,CST,CSEV,CDT,CUSER):
         try:

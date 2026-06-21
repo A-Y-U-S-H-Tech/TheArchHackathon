@@ -14,8 +14,9 @@ import uvicorn
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
+import builtins
 
-
+builtins.print = lambda *args, **kwargs: None
 
 app = FastAPI()
 

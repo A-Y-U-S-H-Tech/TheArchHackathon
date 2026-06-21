@@ -16,7 +16,11 @@ async def PMS_Create(request:Request):
     
 @router.post("/PMS/{PID}/Delete")
 async def PMS_Delete(PID:int):
-    pass
+    _flag = dms.Delete_Product(PID)
+    if _flag :
+        return JSONResponse("ok",200)
+    else:
+        return JSONResponse("falied",400)
 
 @router.post("/PMS/{PID}/Update")
 async def PMS_Update(PID:int):
