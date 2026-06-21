@@ -33,16 +33,16 @@ def TGS_Return(Ticket_ID:int):
         return JSONResponse(" ",400)
 
 @router.post("/TGS/{Ticket_ID}/Update")
-async def TGS_Update(request:Request):
+async def TGS_Update(request:Request,Ticket_ID:int):
     _data = await request.json()
-    dms.Update_Ticket(False,False,False,_data["STA"],_data["PRI"],False,_data["DES"])
+    dms.Update_Ticket(Ticket_ID,False,False,_data["STA"],_data["PRI"],False,_data["DES"])
     return JSONResponse("ok",200)
 
 @router.post("/TGS/{Ticket_ID}/Escalate")
-def TGS_Escalate(request:Request):
+def TGS_Escalate(request:Request,Ticket_ID:int):
     JSONResponse("ok",200)
 
 @router.post("/TGS/{Ticket_ID}/close")
-def TGS_Close(request:Request):
-    dms.Update_Ticket(False,False,False,False,"Resolved",False,False)
+def TGS_Close(request:Request,Ticket_ID:int):
+    dms.Update_Ticket(Ticket_ID,False,False,False,"Resolved",False,False)
     return JSONResponse("ok",200)

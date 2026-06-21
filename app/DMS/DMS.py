@@ -355,9 +355,9 @@ class DMS:
                 _query["STA"] = STA
             if DES:
                 _query["DES"] = DES
-            self.client.table("Ticket").insert(
+            self.client.table("Ticket").update(
                 _query
-            ).execute()
+            ).eq("TID",TID).execute()
             return True
         except PostgrestAPIError as e:
             return False 
